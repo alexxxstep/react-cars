@@ -1,17 +1,28 @@
-import React, { Component } from 'react'
-import './App.css'
+import React, { Component, createContext } from 'react'
+import './App.scss'
 import Car from './Car/Car'
+import Counter from './Counter/Counter'
+import ErrorBoundary from './ErrorBoundary/ErrorBoundary'
+
+export const ClickedContext = createContext(false)
 
 class App extends Component {
-  state = {
-    cars: [
-      { name: 'Ford', year: 2018 },
-      { name: 'Audi', year: 2016 },
-      { name: 'Mazda', year: 2010 },
-    ],
-    pageTitle: 'React components',
-    showCars: false,
+  constructor(props) {
+    console.log('App constructor')
+    super(props)
+
+    this.state = {
+      clicked: false,
+      cars: [
+        { name: 'Ford', year: 2018 },
+        { name: 'Audi', year: 2016 },
+        { name: 'Mazda', year: 2010 },
+      ],
+      pageTitle: 'React components',
+      showCars: false,
+    }
   }
+
   onChangeName = (name, index) => {
     const car = this.state.cars[index]
     car.name = name
@@ -35,35 +46,61 @@ class App extends Component {
   }
 
   render() {
+    console.log('App render')
     const divStyle = {
       textAlign: 'center',
     }
-
-    // const cars = this.state.cars
 
     let cars = null
 
     if (this.state.showCars) {
       cars = this.state.cars.map((car, index) => {
         return (
-          <Car
-            key={index}
-            name={car.name}
-            year={car.year}
-            onDelete={this.deleteHandler.bind(this, index)}
-            onChangeName={(event) => {
-              this.onChangeName(event.target.value, index)
-            }}
-          />
+          <ErrorBoundary key={index}>
+            <Car
+              name={car.name}
+              year={car.year}
+              index={index}
+              onDelete={this.deleteHandler.bind(this, index)}
+              onChangeName={(event) => {
+                this.onChangeName(event.target.value, index)
+              }}
+            />
+          </ErrorBoundary>
         )
       })
     }
 
     return (
       <div style={divStyle}>
-        <h1>{this.state.pageTitle}</h1>
+        {/* <h1>{this.state.pageTitle}</h1> */}
 
-        <button onClick={this.toggleCarsHandler}>Toggle cars</button>
+        <h1>{this.props.title}</h1>
+
+        <ClickedContext.Provider value={this.state.clicked}>
+          <Counter />
+        </ClickedContext.Provider>
+
+        <hr />
+
+        <button
+          style={{
+            marginTop: '20px',
+          }}
+          className={'AppButton'}
+          onClick={this.toggleCarsHandler}
+        >
+          Toggle cars
+        </button>
+
+        <button
+          onClick={() => {
+            this.setState({ clicked: true })
+          }}
+        >
+          Change clicked
+        </button>
+
         <div
           style={{
             width: 400,
